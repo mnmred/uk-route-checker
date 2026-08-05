@@ -254,6 +254,31 @@
     color:#6f6f74;
     line-height:1.7;
   }
+.mana-branding {
+    position: fixed;
+    bottom: 16px;
+    right: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+    z-index: 1000;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+  }
+  .mana-branding:hover {
+    opacity: 1;
+  }
+  .mana-branding img {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    object-fit: cover;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
 </style>
 </head>
 <body>
@@ -332,6 +357,11 @@
 
 </div>
 
+<div class="mana-branding">
+  <span>By Mana & Co</span>
+  <img src="./assets/logo.png" alt="Mana & Co Logo">
+</div>
+  
 <script>
 const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
 const OSRM_URL = "https://router.project-osrm.org/route/v1/driving/";
