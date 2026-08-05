@@ -329,7 +329,7 @@
 <script>
 const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
 const OSRM_URL = "https://router.project-osrm.org/route/v1/driving/";
-const CLOSURES_XLSX_URL = "https://nationalhighways.co.uk/media/muihe4cv/7-day-closure-report.xlsx";
+const CLOSURES_XLSX_URL = "./closures.xlsx";
 const ROAD_REF_RE = /\b([AM]\d+[A-Z]?(?:\(M\))?)\b/g;
 
 const I18N = {
@@ -819,29 +819,10 @@ function renderAll(){
   if(closureResult) renderClosureResults(closureResult);
 }
 
-// ✨ UPDATED FIX: Using proxies that handle binary files better
 async function tryAutoFetchClosures(){
-  // Proxy 1: CodeTabs (Historically very good at handling binary files)
-  const proxy1 = `https://api.codetabs.com/v1/proxy?quest=${CLOSURES_XLSX_URL}`;
-  
-  // Proxy 2: corsproxy.org
-  const proxy2 = `https://corsproxy.org/?${encodeURIComponent(CLOSURES_XLSX_URL)}`;
-
-  let res;
-  
-  try {
-    res = await fetch(proxy1);
-    if (!res.ok) throw new Error("Primary proxy failed");
-  } catch (err) {
-    console.warn("Proxy 1 failed, trying fallback...", err);
-    try {
-      res = await fetch(proxy2);
-      if (!res.ok) throw new Error("Fallback proxy failed");
-    } catch (fallbackErr) {
-      throw new Error("All automated download proxies failed.");
-    }
-  }
-
+  // Fetch the file directly from your own GitHub Pages domain
+  const res = await fetch(CLOSURES_XLSX_URL);
+  if(!res.ok) throw new Error("Local closures.xlsx file not found. Ensure the automated download has run.");
   const buf = await res.arrayBuffer();
   return parseWorkbook(buf);
 }
