@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -278,6 +278,12 @@
       <label for="origin" data-i18n="labelOrigin"></label>
       <input id="origin" type="text" required>
     </div>
+    
+    <!-- Swap Button -->
+    <div style="text-align: center; margin: -10px 0 10px;">
+      <button type="button" id="swapBtn" style="background: #101012; border: 1px solid #4a4a4f; color: var(--amber); padding: 4px 16px; border-radius: 20px; cursor: pointer; font-size: 16px; transition: 0.2s;" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor='#4a4a4f'" title="Swap Origin & Destination">⇅</button>
+    </div>
+
     <div class="field">
       <label for="destination" data-i18n="labelDestination"></label>
       <input id="destination" type="text" required>
@@ -479,8 +485,17 @@ const I18N = {
   }
 };
 
-let currentLang = "fa";
-let lastComputation = null; 
+let currentLang = "en";
+let lastComputation = null;
+
+// Swap Button Logic
+document.getElementById("swapBtn").addEventListener("click", () => {
+  const originInput = document.getElementById("origin");
+  const destInput = document.getElementById("destination");
+  const temp = originInput.value;
+  originInput.value = destInput.value;
+  destInput.value = temp;
+});
 
 function t(key){
   const val = I18N[currentLang][key];
@@ -576,7 +591,7 @@ async function getRoute(origin, dest){
         name: step.name || "",
         ref: step.ref || "",
         duration: step.duration || 0,
-        distance: step.distance || 0,
+        distance: step.distance || 0, 
         bearing: (step.maneuver && typeof step.maneuver.bearing_after === "number")
           ? step.maneuver.bearing_after
           : (step.maneuver && typeof step.maneuver.bearing_before === "number" ? step.maneuver.bearing_before : null)
@@ -705,9 +720,9 @@ function shouldIncludeByDirection(rowDirRaw, travelBearingDeg){
   else if(rowDir.includes("south")) ref = 180;
   else if(rowDir.includes("east")) ref = 90;
   else if(rowDir.includes("west")) ref = 270;
-  if(ref === null) return true;
+  if(ref === null) return true; 
 
-  return bearingDiff(travelBearingDeg, ref) <= 90;
+  return bearingDiff(travelBearingDeg, ref) <= 90; 
 }
 
 function checkClosures(roadEta, rows, roadBearing){
@@ -820,7 +835,6 @@ function renderAll(){
 }
 
 async function tryAutoFetchClosures(){
-  // Fetch the file directly from your own GitHub Pages domain
   const res = await fetch(CLOSURES_XLSX_URL);
   if(!res.ok) throw new Error("Local closures.xlsx file not found. Ensure the automated download has run.");
   const buf = await res.arrayBuffer();
@@ -903,6 +917,31 @@ manualFileInput.addEventListener("change", async (e) => {
   }
 });
 
+// Calculate UK time string format (YYYY-MM-DDTHH:mm) for validation & prefill
+function getUKDateTimeString(dateObj) {
+  const svString = dateObj.toLocaleString('sv-SE', { timeZone: 'Europe/London' });
+  return svString.replace(' ', 'T').slice(0, 16); 
+}
+
+function initDates() {
+  const depInput = document.getElementById("departure");
+  const now = new Date();
+  
+  // 1. Prefill with the exact current UK time
+  depInput.value = getUKDateTimeString(now);
+  
+  // 2. Set min allowed date to start of today in UK (00:00)
+  const todayStr = getUKDateTimeString(now).slice(0, 10);
+  depInput.min = `${todayStr}T00:00`;
+  
+  // 3. Set max allowed date to exactly 7 days from today (23:59)
+  const maxDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const maxStr = getUKDateTimeString(maxDate).slice(0, 10);
+  depInput.max = `${maxStr}T23:59`;
+}
+
+// Initialize date logic and translations
+initDates();
 applyStaticTranslations();
 </script>
 
