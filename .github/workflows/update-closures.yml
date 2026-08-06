@@ -2,8 +2,8 @@ name: Daily Route Closure Downloader
 
 on:
   schedule:
-    # Runs automatically every day at 07:00 and 17:00 UTC
-    - cron: '0 7,17 * * *'
+    # Runs automatically every day at 15:13 UTC
+    - cron: '13 15 * * *'
   workflow_dispatch: # Manual update button
 
 jobs:
