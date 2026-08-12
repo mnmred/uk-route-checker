@@ -10,15 +10,35 @@ jobs:
   download-and-save:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Allows the bot to save the file to your repo
+      contents: write
 
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
 
-      - name: Download the Excel file from National Highways
+      - name: Scrape website and download latest Excel file
         run: |
-          curl -L -o closures.xlsx "https://nationalhighways.co.uk/media/ufshmlno/7-day-closure-report.xlsx"
+          # 1. Fetch the main travel updates page
+          PAGE_HTML=$(curl -sL "https://nationalhighways.co.uk/travel-updates/road-closure-report/")
+          
+          # 2. Search the page code for the newest .xlsx link
+          FILE_URL=$(echo "$PAGE_HTML" | grep -o 'href="[^"]*\.xlsx"' | head -1 | cut -d'"' -f2)
+          
+          # 3. Stop if we couldn't find a link
+          if [ -z "$FILE_URL" ]; then
+            echo "Error: Could not find the .xlsx link on the page!"
+            exit 1
+          fi
+          
+          # 4. If the link is relative (starts with /), add the domain name
+          if [[ "$FILE_URL" == /* ]]; then
+            FILE_URL="https://nationalhighways.co.uk$FILE_URL"
+          fi
+          
+          echo "Downloading from: $FILE_URL"
+          
+          # 5. Download the file
+          curl -L -o closures.xlsx "$FILE_URL"
 
       - name: Commit and push the updated file
         run: |
